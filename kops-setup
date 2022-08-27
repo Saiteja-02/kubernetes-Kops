@@ -1,0 +1,39 @@
+Step 1:
+# Dowload kops
+curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+# Make the kops binary executable
+chmod +x kops-linux-amd64
+# Move the kops binary in to your PATH.
+sudo mv kops-linux-amd64 /usr/local/bin/kops
+
+Step 2:
+# Setup NS records in Route53/ any registrar
+
+Step 3:
+# Verify your route53 domain setup
+dig NS dev.example.com
+
+Step 4:
+# Create s3 bucket using name of Hosted Zone
+aws s3 mb s3://clusters.dev.example.com
+# kops will use this location by default. We suggest putting this in your bash profile
+export KOPS_STATE_STORE=s3://clusters.dev.example.com
+
+Step 5:
+# Create your configuration
+kops create cluster --zones=us-east-1c useast1.dev.example.com
+. List your clusters with: kops get cluster
+. Edit this cluster with: kops edit cluster useast1.dev.example.com
+. Edit your node instance group: kops edit ig --name=useast1.dev.example.com nodes
+. Edit your master instance group: kops edit ig --name=useast1.dev.example.com master-us-east-1c
+
+Step 6:
+# Create the cluster in AWS
+kops update cluster useast1.dev.example.com --yes
+# To roll out the configuration immediately.
+kops rolling-update cluster
+
+Step 7:
+kops delete cluster useast1.dev.example.com --yes
+
+
